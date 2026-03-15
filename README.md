@@ -39,7 +39,9 @@ competitiveness, dominant teams, and race outcomes?
 
 **1. Race outcome predictor**
 **Primary target:** Finishing position bracket (P1–3, P4–10, P11+)
+
 **2. Tyre degradation model**
 **Primary target:** Lap time delta per lap on a given compound
+
 **3. Driver style clustering**
 **Primary target:** Finding driving style similarities 
