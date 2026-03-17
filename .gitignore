@@ -3,6 +3,7 @@ venv/
 env/
 ENV/
 .Python
+__pycache__
 dist/
 build/
 eggs/
