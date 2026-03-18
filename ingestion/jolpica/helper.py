@@ -32,7 +32,7 @@ def _get_with_retry(url: str, params: dict = None) -> dict:
 def pagination_helper(endpoint: str, params: dict = None) -> list[dict]:
     if params is None:
         params = {}
-    limit = 200
+    limit = 100
     offset = 0
     all_results = []
     
@@ -45,12 +45,15 @@ def pagination_helper(endpoint: str, params: dict = None) -> list[dict]:
         total = int(data["total"])
         returned_limit = int(data["limit"])
         returned_offset = int(data["offset"])
+        # print(f"offset={returned_offset}, limit={returned_limit}, total={total}")
+        # print(f"records in this page: {len(data['RaceTable']['Races'])}")
 
         logger.info(f"{endpoint}: offset {returned_offset}/{total}")
 
         all_results.append(data)
 
-        if returned_offset + returned_limit >= limit:
+        if returned_offset + returned_limit >= total:
+            # print(f"break check: {returned_offset} + {returned_limit} >= {total} → {returned_offset + returned_limit >= total}")
             break
         offset += limit
 
@@ -58,4 +61,5 @@ def pagination_helper(endpoint: str, params: dict = None) -> list[dict]:
 
     return all_results
 
+# pagination_helper("2023/results")
 

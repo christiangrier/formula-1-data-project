@@ -12,6 +12,24 @@ The project is built in two stages:
   PySpark replaces pandas, the dbt adapter switches from DuckDB to Databricks SQL,
   and MLflow moves from local tracking to the Databricks-managed registry.
 
+## Data Engineering
+ 
+**Pipeline 1:** Jolpica-F1 ingestion
+**Primary question:** How do we reliably extract and store historical F1 race data
+at scale across multiple seasons, rounds, and endpoints?
+ 
+**Pipeline 2:** FastF1 ingestion
+**Primary question:** How do we extract detailed lap and telemetry data for
+every session and store it in a structured and easily queryable format?
+ 
+**Pipeline 3:** Medallion transformation
+**Primary question:** How do we prepare raw ingested data into a set of trusted, 
+analytics-ready Gold tables?
+ 
+**Pipeline 4:** Streaming layer
+**Primary question:** How do we process live race telemetry in real time and
+merge it seamlessly with the existing batch pipeline? 
+
 ## Analytics
 
 **Theme 1:** Driver performance
