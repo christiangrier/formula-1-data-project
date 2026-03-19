@@ -1,0 +1,101 @@
+import os
+import duckdb
+import logging
+from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).resolve().parents[2] / ".env")
+
+logger = logging.getLogger(__name__)
+
+ENDPOINTS = [
+    "race_results",
+    "driver_standings",
+    "constructor_standings",
+    "race_schedule"
+]
+
+FOLDER_ENDPOINTS = [
+    "pit_stops"
+]
+
+def config_s3(con: duckdb.DuckDBPyConnection) -> None:
+    con.execute("INSTALL httpfs; LOAD httpfs;")
+    con.execute(f"""
+        SET s3_access_key_id = '{os.getenv("AWS_ACCESS_KEY_ID")}';
+        SET s3_secret_access_key = '{os.getenv("AWS_SECRET_ACCESS_KEY")}';
+        SET s3_region = '{os.getenv("AWS_REGION")}';
+    """
+    )
+    logger.info("Duckdb connection config for S3 success")
+
+def load_table(con: duckdb.DuckDBPyConnection, s3_path: str, table_name: str) -> None:
+    con.execute(f"""
+        CREATE OR REPLACE TABLE {table_name} AS 
+        SELECT * FROM read_parquet('{s3_path}')
+    """
+    )
+
+    row_count = con.execute(
+        f"SELECT COUNT(*) FROM {table_name}"
+    ).fetchone()[0]
+
+    logger.info(f"{table_name} and total of {row_count} loaded")
+
+def load_jolpica_bronze(con: duckdb.DuckDBPyConnection, year: int, bucket: str = None) -> None:
+    if bucket is None:
+        bucket = os.getenv("S3_BUCKET_RAW")
+    
+    config_s3(con)
+
+    for endpoint in ENDPOINTS:
+        s3_path = f"s3://{bucket}/jolpica/{year}/{endpoint}.parquet"
+        table_name = f"bronze.jolpica_{endpoint}"
+        logger.info(f"Loading {s3_path} to {table_name}")
+        load_table(con, s3_path, table_name)
+    
+    for endpoint in FOLDER_ENDPOINTS:
+        s3_path = f"s3://{bucket}/jolpica/{year}/{endpoint}/*.parquet"
+        table_name = f"bronze.jolpica_{endpoint}"
+        logger.info(f"Loading {s3_path} to {table_name}")
+        load_table(con, s3_path, table_name)
+
+def verify_bronze_tables(con: duckdb.DuckDBPyConnection) -> None:
+
+    for endpoint in ENDPOINTS:
+        table_name = f"bronze.jolpica_{endpoint}"
+        try:
+            row_count = con.execute(
+                f"SELECT COUNT(*) FROM {table_name}"
+            ).fetchone()[0]
+ 
+            round_count = con.execute(
+                f"SELECT COUNT(DISTINCT round) FROM {table_name}"
+            ).fetchone()[0]
+ 
+            print(
+                f"{table_name:<40} "
+                f"rows={row_count:<6} "
+                f"rounds={round_count}"
+            )
+        except Exception as e:
+            print(f"{table_name:<40} ERROR: {e}")
+
+    for endpoint in FOLDER_ENDPOINTS:
+        table_name = f"bronze.jolpica_{endpoint}"
+        try:
+            row_count = con.execute(
+                f"SELECT COUNT(*) FROM {table_name}"
+            ).fetchone()[0]
+ 
+            round_count = con.execute(
+                f"SELECT COUNT(DISTINCT round) FROM {table_name}"
+            ).fetchone()[0]
+ 
+            print(
+                f"{table_name:<40} "
+                f"rows={row_count:<6} "
+                f"rounds={round_count}"
+            )
+        except Exception as e:
+            print(f"{table_name:<40} ERROR: {e}")
