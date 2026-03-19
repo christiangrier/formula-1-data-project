@@ -10,12 +10,7 @@ load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 
 logger = logging.getLogger(__name__)
 
-def df_write_to_s3_raw(
-    df: pd.DataFrame,
-    source: str,
-    year: int,
-    endpoint: str
-) -> str:
+def df_write_to_s3_raw(df: pd.DataFrame, source: str, year: int, endpoint: str) -> str:
     df = df.copy()
     df["source"] = source
     df["ingested_at"] = datetime.now(timezone.utc).isoformat()
