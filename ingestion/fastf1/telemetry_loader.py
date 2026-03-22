@@ -32,7 +32,7 @@ def get_driver_telemetry(year: int, round_number: int) -> pd.DataFrame:
                 telemetry = rename_columns(telemetry)
 
                 telemetry["season"] = year
-                telemetry["round_number"] = round_number
+                telemetry["round"] = round_number
                 telemetry["driver"] = lap["Driver"]
                 telemetry["team"] = lap["Team"]
                 telemetry["lap_number"] = int(lap["LapNumber"])
@@ -48,7 +48,7 @@ def get_driver_telemetry(year: int, round_number: int) -> pd.DataFrame:
     df = pd.concat(all_telemetry, ignore_index=True)
 
     logger.info(
-        f"Telemetry loaded for year={year} and round_number={round_number} "
+        f"Telemetry loaded for year={year} and round={round_number} "
         f"rows={len(df)}"
     )
 

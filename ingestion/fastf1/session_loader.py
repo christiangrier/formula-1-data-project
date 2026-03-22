@@ -30,6 +30,6 @@ def load_session(year: int, round_number: int) -> dict[str, pd.DataFrame]:
     for endpoint in ENDPOINTS:
         df = rename_columns(getattr(session, endpoint))
         df["season"] = year
-        df["round_number"] = round_number
+        df["round"] = round_number
         results[endpoint] = df
     return results
