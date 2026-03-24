@@ -4,6 +4,11 @@ import duckdb
 
 logger = logging.getLogger(__name__)
 
+_NS_PER_SECONDS = 1_000_000_000
+
+def nanoseconds_to_seconds(series: pd.Series) -> pd.Series:
+    return pd.to_numeric(series, errors="coerce") / _NS_PER_SECONDS
+
 def write_to_silver(df: pd.DataFrame, con: duckdb.DuckDBPyConnection, table_name: str) -> None:
     qualified = f"silver.{table_name}"
 
