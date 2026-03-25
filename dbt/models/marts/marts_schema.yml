@@ -1,0 +1,384 @@
+version: 2
+
+models:
+  - name: mart_race_results
+    description: >
+      Final race classification per driver per round. One row per driver per race.
+      Combines FastF1 result data with Jolpica schedule metadata. Primary source
+      for race outcome analysis and the race outcome predictor ML model.
+    columns:
+      - name: result_id
+        description: Surrogate primary key — hash of (season, round, driver_id).
+        tests:
+          - not_null
+          - unique
+
+      - name: season
+        description: Championship season (year).
+        tests:
+          - not_null
+
+      - name: round
+        description: Round number within the season.
+        tests:
+          - not_null
+
+      - name: driver_id
+        description: Lowercase snake_case driver identifier.
+        tests:
+          - not_null
+
+      - name: team_id
+        description: Lowercase snake_case team identifier.
+
+      - name: team_color
+        description: Team hex color code (without #). Used in Streamlit charts.
+
+      - name: race_name
+        description: Full race name.
+
+      - name: race_date
+        description: Date of the race.
+
+      - name: is_sprint_weekend
+        description: True if this round includes a sprint qualifying session.
+
+      - name: grid_position
+        description: Starting grid position.
+
+      - name: finish_position
+        description: Final classified finishing position. Null for non-finishers.
+
+      - name: points
+        description: Championship points awarded. Sourced from Jolpica.
+
+      - name: status
+        description: Race finish status. Coalesced from FastF1 and Jolpica.
+
+      - name: fastest_lap_rank
+        description: Rank of this driver's fastest lap. Null if not recorded.
+
+  - name: mart_driver_standings
+    description: >
+      Rolling driver championship standings after each round. One row per driver
+      per round. Includes points_this_round derived from the previous round's total.
+    columns:
+      - name: standing_id
+        description: Surrogate primary key — hash of (season, round, driver_id).
+        tests:
+          - not_null
+          - unique
+
+      - name: season
+        description: Championship season (year).
+        tests:
+          - not_null
+
+      - name: round
+        description: Round number within the season.
+        tests:
+          - not_null
+
+      - name: driver_id
+        description: Lowercase snake_case driver identifier.
+        tests:
+          - not_null
+
+      - name: championship_position
+        description: Driver championship position after this round.
+        tests:
+          - not_null
+
+      - name: championship_points
+        description: Cumulative championship points after this round.
+        tests:
+          - not_null
+
+      - name: wins
+        description: Cumulative race wins after this round.
+
+      - name: points_this_round
+        description: >
+          Points scored in this round specifically, derived from the delta
+          between this round and the previous round's cumulative total.
+          Null for the first round of the season.
+
+  - name: mart_constructor_standings
+    description: >
+      Rolling constructor championship standings after each round. One row per
+      constructor per round.
+    columns:
+      - name: standing_id
+        description: Surrogate primary key — hash of (season, round, constructor_id).
+        tests:
+          - not_null
+          - unique
+
+      - name: season
+        description: Championship season (year).
+        tests:
+          - not_null
+
+      - name: round
+        description: Round number within the season.
+        tests:
+          - not_null
+
+      - name: constructor_id
+        description: Lowercase snake_case constructor identifier.
+        tests:
+          - not_null
+
+      - name: championship_position
+        description: Constructor championship position after this round.
+        tests:
+          - not_null
+
+      - name: championship_points
+        description: Cumulative constructor championship points after this round.
+        tests:
+          - not_null
+
+      - name: points_this_round
+        description: Points scored in this round. Null for the first round of the season.
+
+  - name: mart_lap_times
+    description: >
+      Individual lap records per driver per round. One row per lap. No filtering
+      applied — is_accurate and lap_number filters should be applied by consumers
+      where clean pace data is required.
+    columns:
+      - name: lap_id
+        description: Surrogate primary key — hash of (season, round, driver, lap_number).
+        tests:
+          - not_null
+          - unique
+
+      - name: season
+        description: Championship season (year).
+        tests:
+          - not_null
+
+      - name: round
+        description: Round number within the season.
+        tests:
+          - not_null
+
+      - name: driver
+        description: Lowercase three-letter driver abbreviation.
+        tests:
+          - not_null
+
+      - name: lap_number
+        description: Lap number within the session.
+        tests:
+          - not_null
+
+      - name: lap_time_seconds
+        description: Total lap time in seconds.
+
+      - name: compound
+        description: Tyre compound for this lap.
+
+      - name: is_accurate
+        description: FastF1 accuracy flag — false for safety car laps and in/out laps.
+
+      - name: is_personal_best
+        description: True if this is the driver's personal best lap in the session.
+
+      - name: deleted
+        description: True if the lap time was deleted by the stewards.
+
+  - name: mart_pit_stops
+    description: >
+      Individual pit stop events enriched with tyre compound context and lap time
+      data. One row per pit stop. Sourced from Jolpica (timing) and FastF1 (context).
+    columns:
+      - name: pit_stop_id
+        description: Surrogate primary key — hash of (season, round, driver_id, pit_stop_number).
+        tests:
+          - not_null
+          - unique
+
+      - name: season
+        description: Championship season (year).
+        tests:
+          - not_null
+
+      - name: round
+        description: Round number within the season.
+        tests:
+          - not_null
+
+      - name: driver_id
+        description: Lowercase snake_case driver identifier.
+        tests:
+          - not_null
+
+      - name: pit_stop_number
+        description: Sequential pit stop number for this driver in this race.
+        tests:
+          - not_null
+
+      - name: lap_pitted
+        description: Lap number on which the driver entered the pit lane.
+
+      - name: pit_stop_duration_seconds
+        description: Total pit stop duration in seconds.
+        tests:
+          - not_null
+
+      - name: compound_ending
+        description: Tyre compound being removed during this pit stop.
+
+      - name: compound_starting
+        description: Tyre compound fitted during this pit stop.
+
+      - name: tyre_age_at_pit
+        description: Number of laps on the removed tyre set.
+
+      - name: is_slow_pit_stop
+        description: True if pit stop duration exceeded 30 seconds.
+
+  - name: mart_tyre_strategy
+    description: >
+      Tyre stint summary per driver per race. One row per stint. Includes pace
+      metrics and degradation rate. Primary input for the tyre degradation ML model.
+    columns:
+      - name: tyre_stint_id
+        description: Surrogate primary key — hash of (season, round, driver, stint).
+        tests:
+          - not_null
+          - unique
+
+      - name: season
+        description: Championship season (year).
+        tests:
+          - not_null
+
+      - name: round
+        description: Round number within the season.
+        tests:
+          - not_null
+
+      - name: driver
+        description: Lowercase three-letter driver abbreviation.
+        tests:
+          - not_null
+
+      - name: stint
+        description: Stint number within the race.
+        tests:
+          - not_null
+
+      - name: compound
+        description: Tyre compound used in this stint.
+
+      - name: stint_length_laps
+        description: Number of laps completed on this stint.
+
+      - name: avg_lap_time_seconds
+        description: Average lap time in seconds for accurate laps in this stint.
+
+      - name: degradation_rate_seconds_per_lap
+        description: >
+          Linear regression slope of lap time against tyre life for this stint.
+          Positive value means the car is getting slower per lap (tyre degradation).
+          Computed using regr_slope() — null if insufficient data points.
+
+  - name: mart_telemetry_stints
+    description: >
+      Aggregated telemetry metrics per driver per stint. One row per stint.
+      Primary input for the driver style clustering ML model in Phase 4.
+    columns:
+      - name: telemetry_stint_id
+        description: Surrogate primary key — hash of (season, round, driver, stint).
+        tests:
+          - not_null
+          - unique
+
+      - name: season
+        description: Championship season (year).
+        tests:
+          - not_null
+
+      - name: round
+        description: Round number within the season.
+        tests:
+          - not_null
+
+      - name: driver
+        description: Lowercase three-letter driver abbreviation.
+        tests:
+          - not_null
+
+      - name: stint
+        description: Stint number within the race.
+        tests:
+          - not_null
+
+      - name: compound
+        description: Tyre compound used in this stint.
+
+      - name: stint_laps
+        description: Number of laps in this stint.
+
+      - name: avg_speed
+        description: Average car speed in km/h across all telemetry samples in this stint.
+
+      - name: max_speed
+        description: Maximum car speed recorded in this stint.
+
+      - name: full_throttle_pct
+        description: Percentage of telemetry samples where throttle was at 99% or above.
+
+      - name: brake_pct
+        description: Percentage of telemetry samples where brakes were applied.
+
+      - name: drs_open_pct
+        description: Percentage of telemetry samples where DRS was open.
+
+  - name: mart_weather
+    description: >
+      Weather readings per session enriched with race schedule metadata.
+      One row per weather sample (~60 second intervals). Used to join weather
+      conditions to lap times and race results in analytics.
+    columns:
+      - name: weather_id
+        description: Surrogate primary key — hash of (season, round, session_elapsed_seconds).
+        tests:
+          - not_null
+          - unique
+
+      - name: season
+        description: Championship season (year).
+        tests:
+          - not_null
+
+      - name: round
+        description: Round number within the season.
+        tests:
+          - not_null
+
+      - name: race_name
+        description: Full race name.
+
+      - name: session_elapsed_seconds
+        description: Seconds elapsed since session start at time of reading.
+        tests:
+          - not_null
+
+      - name: air_temp
+        description: Air temperature in degrees Celsius.
+
+      - name: track_temp
+        description: Track surface temperature in degrees Celsius.
+
+      - name: track_air_temp_delta
+        description: >
+          Difference between track temperature and air temperature in degrees Celsius.
+          Higher values indicate more rubber laid down or greater solar radiation on
+          the track surface.
+
+      - name: rainfall
+        description: True if rainfall was detected at time of reading.

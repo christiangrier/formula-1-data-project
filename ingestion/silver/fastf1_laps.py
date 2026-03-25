@@ -23,13 +23,6 @@ _NS_TIME_COLUMNS = [
 ]
 
 def clean_fastf1_laps(df: pd.DataFrame) -> pd.DataFrame:
-    df["is_accurate"] = df["is_accurate"].astype(bool)
-    before_filter = len(df)
-    df = df[df["is_accurate"] & (df["lap_number"] > 1)]
-    filtered = before_filter - len(df)
-    if filtered:
-        logger.info("Filtered %d rows (is_accurate=False or lap_number <= 1)", filtered)
-    
     for col in _NS_TIME_COLUMNS:
         if col in df.columns:
             df[f"{col}_seconds"] = nanoseconds_to_seconds(df[col])

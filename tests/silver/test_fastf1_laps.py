@@ -49,31 +49,24 @@ def make_df(*rows) -> pd.DataFrame:
 
 class TestFiltering:
 
-    def test_inaccurate_laps_filtered_out(self):
-        row_accurate = make_row(is_accurate=True)
+    def test_inaccurate_laps_not_filtered(self):
+        row_accurate = make_row(is_accurate=True, lap_number=2.0)
         row_inaccurate = make_row(is_accurate=False, lap_number=3.0)
         df = clean_fastf1_laps(make_df(row_accurate, row_inaccurate))
+        assert len(df) == 2
+
+    def test_lap_1_not_filtered(self):
+        row = make_row(is_accurate=True, lap_number=1.0)
+        df = clean_fastf1_laps(make_df(row))
         assert len(df) == 1
 
-    def test_lap_number_1_filtered_out(self):
-        row_lap1 = make_row(lap_number=1.0)
-        row_lap2 = make_row(lap_number=2.0)
-        df = clean_fastf1_laps(make_df(row_lap1, row_lap2))
-        assert len(df) == 1
-        assert df["lap_number"].iloc[0] == 2
-
-    def test_inaccurate_lap_1_filtered_out(self):
+    def test_inaccurate_lap_1_not_filtered(self):
         row = make_row(is_accurate=False, lap_number=1.0)
         df = clean_fastf1_laps(make_df(row))
-        assert len(df) == 0
-
-    def test_accurate_lap_2_kept(self):
-        row = make_row(is_accurate=True, lap_number=2.0)
-        df = clean_fastf1_laps(make_df(row))
         assert len(df) == 1
 
-    def test_all_laps_accurate_and_above_1_kept(self):
-        rows = [make_row(lap_number=float(i)) for i in range(2, 7)]
+    def test_all_laps_kept_regardless_of_accuracy(self):
+        rows = [make_row(lap_number=float(i), is_accurate=(i % 2 == 0)) for i in range(1, 6)]
         df = clean_fastf1_laps(make_df(*rows))
         assert len(df) == 5
 

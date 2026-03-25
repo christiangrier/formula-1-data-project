@@ -1,0 +1,402 @@
+version: 2
+
+models:
+  - name: stg_jolpica_race_results
+    description: >
+      Race classification per driver per round, sourced from the Jolpica-F1 API.
+      One row per driver per race. Excludes metadata columns (source, ingested_at).
+    config:
+      tags: ["jolpica"]
+    columns:
+      - name: season
+        description: Championship season (year).
+        tests:
+          - not_null
+      - name: round
+        description: Round number within the season.
+        tests:
+          - not_null
+      - name: driver_id
+        description: Lowercase snake_case driver identifier, e.g. "russell".
+        tests:
+          - not_null
+      - name: driver_code
+        description: Three-letter driver abbreviation, e.g. "RUS".
+        tests:
+          - not_null
+      - name: constructor
+        description: Lowercase snake_case constructor identifier, e.g. "mercedes".
+        tests:
+          - not_null
+      - name: race_name
+        description: Full race name, e.g. "Australian Grand Prix".
+      - name: circuit
+        description: Full circuit name, e.g. "Albert Park Grand Prix Circuit".
+      - name: race_date
+        description: Date of the race.
+      - name: grid_position
+        description: Starting grid position. 0 indicates a pit lane start.
+      - name: finish_position
+        description: >
+          Final classified finishing position as integer. Null for non-finishers
+          where position could not be assigned.
+      - name: points
+        description: Championship points awarded. Can be fractional in historical seasons.
+      - name: status
+        description: >
+          Race finish status, e.g. "Finished", "+1 Lap", "Engine", "Collision".
+          "Unknown" where status was not recorded.
+      - name: fastest_lap_rank
+        description: >
+          Rank of this driver's fastest lap among all drivers in the race.
+          Null if no fastest lap was recorded for this driver.
+
+  - name: stg_jolpica_driver_standings
+    description: >
+      Rolling driver championship standings after each round, sourced from Jolpica-F1.
+      One row per driver per round — represents the standings state after that round.
+    config:
+      tags: ["jolpica"]
+    columns:
+      - name: season
+        description: Championship season (year).
+        tests:
+          - not_null
+      - name: round
+        description: Round number within the season.
+        tests:
+          - not_null
+      - name: driver_id
+        description: Lowercase snake_case driver identifier, e.g. "russell".
+        tests:
+          - not_null
+      - name: driver_code
+        description: Three-letter driver abbreviation, e.g. "RUS".
+      - name: driver_name
+        description: Full driver name.
+      - name: driver_dob
+        description: Driver date of birth.
+      - name: driver_country
+        description: Driver nationality. "Unknown" where not recorded.
+      - name: constructor
+        description: Constructor the driver raced for at this round.
+        tests:
+          - not_null
+      - name: constructor_country
+        description: Constructor nationality. "Unknown" where not recorded.
+      - name: championship_position
+        description: Driver championship position after this round.
+        tests:
+          - not_null
+      - name: championship_points
+        description: Cumulative championship points after this round.
+        tests:
+          - not_null
+      - name: wins
+        description: Cumulative race wins after this round.
+        tests:
+          - not_null
+
+  - name: stg_jolpica_constructor_standings
+    description: >
+      Rolling constructor championship standings after each round, sourced from Jolpica-F1.
+      One row per constructor per round.
+    config:
+      tags: ["jolpica"]
+    columns:
+      - name: season
+        description: Championship season (year).
+        tests:
+          - not_null
+      - name: round
+        description: Round number within the season.
+        tests:
+          - not_null
+      - name: constructor_id
+        description: Lowercase snake_case constructor identifier, e.g. "mercedes".
+        tests:
+          - not_null
+      - name: constructor
+        description: Constructor display name, e.g. "Mercedes".
+        tests:
+          - not_null
+      - name: constructor_country
+        description: Constructor nationality. "Unknown" where not recorded.
+      - name: championship_position
+        description: Constructor championship position after this round.
+        tests:
+          - not_null
+      - name: championship_points
+        description: Cumulative constructor championship points after this round.
+        tests:
+          - not_null
+      - name: wins
+        description: Cumulative constructor race wins after this round.
+        tests:
+          - not_null
+
+  - name: stg_jolpica_pit_stops
+    description: >
+      Pit stop events per driver per round, sourced from Jolpica-F1.
+      One row per pit stop. Coverage from 2012 onwards.
+    config:
+      tags: ["jolpica"]
+    columns:
+      - name: season
+        description: Championship season (year).
+        tests:
+          - not_null
+      - name: round
+        description: Round number within the season.
+        tests:
+          - not_null
+      - name: driver_id
+        description: Lowercase snake_case driver identifier.
+        tests:
+          - not_null
+      - name: race_name
+        description: Full race name.
+      - name: circuit
+        description: Full circuit name.
+      - name: race_date
+        description: Date of the race.
+      - name: pit_stop_number
+        description: Sequential pit stop number for this driver in this race.
+        tests:
+          - not_null
+      - name: lap_pitted
+        description: Lap number on which the driver pitted.
+        tests:
+          - not_null
+      - name: pit_in_time
+        description: Clock time when the driver entered the pit lane (HH:MM:SS).
+      - name: pit_stop_duration_seconds
+        description: Total pit stop duration in seconds.
+        tests:
+          - not_null
+
+  - name: stg_jolpica_race_schedule
+    description: >
+      Race calendar with session datetimes, sourced from Jolpica-F1.
+      One row per round. Sprint weekend sessions are nullable for non-sprint rounds.
+    config:
+      tags: ["jolpica"]
+    columns:
+      - name: season
+        description: Championship season (year).
+        tests:
+          - not_null
+      - name: round
+        description: Round number within the season.
+        tests:
+          - not_null
+      - name: race_name
+        description: Full race name.
+        tests:
+          - not_null
+      - name: circuit
+        description: Full circuit name.
+        tests:
+          - not_null
+      - name: race_datetime
+        description: Race start datetime in UTC.
+        tests:
+          - not_null
+      - name: fp1_datetime
+        description: FP1 start datetime in UTC.
+      - name: fp2_datetime
+        description: FP2 start datetime in UTC. Null for sprint weekends.
+      - name: fp3_datetime
+        description: FP3 start datetime in UTC. Null for sprint weekends.
+      - name: sprint_qualy_datetime
+        description: Sprint qualifying start datetime in UTC. Null for non-sprint rounds.
+      - name: qualy_datetime
+        description: Qualifying start datetime in UTC.
+      - name: is_sprint_weekend
+        description: True if this round includes a sprint race.
+        tests:
+          - not_null
+
+  - name: stg_fastf1_results
+    description: >
+      Session classification per driver per round from FastF1.
+      One row per driver per race. Includes qualifying times where available.
+    config:
+      tags: ["fastf1"]
+    columns:
+      - name: season
+        description: Championship season (year).
+        tests:
+          - not_null
+      - name: round
+        description: Round number within the season.
+        tests:
+          - not_null
+      - name: driver_id
+        description: Lowercase snake_case driver identifier, e.g. "russell".
+        tests:
+          - not_null
+      - name: team_id
+        description: Lowercase snake_case team identifier, e.g. "mercedes".
+        tests:
+          - not_null
+      - name: team_color
+        description: Team hex colour code for visualisations, e.g. "00D7B6".
+      - name: grid_position
+        description: Starting grid position.
+      - name: finish_position
+        description: Final classified finishing position. Null for non-starters.
+      - name: classified_position
+        description: >
+          Classified position as string. Includes DNF codes e.g. "R", "D", "W".
+      - name: laps
+        description: Number of laps completed.
+      - name: status
+        description: Race finish status. "Unknown" where not recorded.
+      - name: points
+        description: Championship points awarded.
+      - name: race_time_seconds
+        description: Total race time in seconds for the classified finisher.
+      - name: q1_seconds
+        description: Q1 lap time in seconds. Null for race sessions.
+      - name: q2_seconds
+        description: Q2 lap time in seconds. Null if driver did not reach Q2.
+      - name: q3_seconds
+        description: Q3 lap time in seconds. Null if driver did not reach Q3.
+
+  - name: stg_fastf1_laps
+    description: >
+      Individual lap records per driver per round from FastF1.
+      One row per lap. No filtering applied — is_accurate and lap_number
+      filters are deferred to mart models where context determines applicability.
+    config:
+      tags: ["fastf1"]
+    columns:
+      - name: season
+        description: Championship season (year).
+        tests:
+          - not_null
+      - name: round
+        description: Round number within the season.
+        tests:
+          - not_null
+      - name: driver
+        description: Lowercase three-letter driver abbreviation, e.g. "nor".
+        tests:
+          - not_null
+      - name: lap_number
+        description: Lap number within the session.
+        tests:
+          - not_null
+      - name: stint
+        description: Stint number — increments each time the driver pits.
+      - name: lap_time_seconds
+        description: Total lap time in seconds.
+      - name: sector1_time_seconds
+        description: Sector 1 time in seconds. Null if not recorded.
+      - name: sector2_time_seconds
+        description: Sector 2 time in seconds. Null if not recorded.
+      - name: sector3_time_seconds
+        description: Sector 3 time in seconds. Null if not recorded.
+      - name: compound
+        description: Tyre compound, e.g. "SOFT", "MEDIUM", "HARD". "UNKNOWN" where not recorded.
+      - name: tyre_life
+        description: Age of the tyre in laps at the start of this lap.
+      - name: fresh_tyre
+        description: True if the tyre was new when fitted.
+      - name: is_accurate
+        description: >
+          FastF1 accuracy flag. False for safety car laps, in-laps, and out-laps.
+          Not filtered at Silver — apply selectively in mart models.
+      - name: is_personal_best
+        description: True if this lap was the driver's personal best in the session.
+      - name: deleted
+        description: True if the lap time was deleted by the stewards.
+      - name: position
+        description: Track position at the end of the lap.
+
+  - name: stg_fastf1_weather
+    description: >
+      Weather readings sampled approximately every 60 seconds per session, from FastF1.
+      air_temp and track_temp are forward-filled within each session to handle sensor dropouts.
+    config:
+      tags: ["fastf1"]
+    columns:
+      - name: season
+        description: Championship season (year).
+        tests:
+          - not_null
+      - name: round
+        description: Round number within the season.
+        tests:
+          - not_null
+      - name: session_elapsed_seconds
+        description: Seconds elapsed since session start.
+        tests:
+          - not_null
+      - name: air_temp
+        description: Ambient air temperature in °C. Forward-filled within session.
+      - name: track_temp
+        description: Track surface temperature in °C. Forward-filled within session.
+      - name: humidity
+        description: Relative humidity as a percentage.
+      - name: pressure
+        description: Atmospheric pressure in hPa.
+      - name: rainfall
+        description: True if rainfall was detected at the time of reading.
+      - name: wind_direction
+        description: Wind direction in degrees (0–360).
+      - name: wind_speed
+        description: Wind speed in m/s.
+
+  - name: stg_fastf1_telemetry
+    description: >
+      High-frequency car telemetry sampled approximately every 50ms per driver, from FastF1.
+      Approximately 300K rows per race. Rows with null distance are excluded at Silver.
+    config:
+      tags: ["fastf1"]
+    columns:
+      - name: season
+        description: Championship season (year).
+        tests:
+          - not_null
+      - name: round
+        description: Round number within the season.
+        tests:
+          - not_null
+      - name: driver
+        description: Lowercase three-letter driver abbreviation, e.g. "nor".
+        tests:
+          - not_null
+      - name: lap_number
+        description: Lap number this telemetry point belongs to.
+        tests:
+          - not_null
+      - name: telemetry_timestamp
+        description: UTC datetime of this telemetry sample at ~50ms resolution.
+        tests:
+          - not_null
+      - name: session_elapsed_seconds
+        description: Seconds elapsed since session start.
+      - name: lap_time_seconds
+        description: Lap-relative time in seconds — resets to 0 at the start of each lap.
+      - name: speed
+        description: Car speed in km/h.
+      - name: rpm
+        description: Engine RPM.
+      - name: n_gear
+        description: Current gear (1–8).
+      - name: throttle
+        description: Throttle position as a percentage (0–100).
+      - name: brake
+        description: True if the brake pedal is pressed.
+      - name: drs
+        description: DRS status code. 0=closed, 12/14=open.
+      - name: distance
+        description: Distance along the lap in metres from the start line.
+      - name: x
+        description: Car x-coordinate on the circuit map.
+      - name: y
+        description: Car y-coordinate on the circuit map.
+      - name: z
+        description: Car z-coordinate (altitude) on the circuit map.

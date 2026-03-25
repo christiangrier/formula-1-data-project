@@ -1,0 +1,47 @@
+version: 2
+ 
+sources:
+  - name: silver
+    schema: silver
+    description: >
+      Cleaned Silver layer tables. 
+      Silver cleaning jobs in ingestion/silver/. All staging models
+      read exclusively from this source and never from bronze directly.
+ 
+    tables:
+      - name: jolpica_race_results
+        description: >
+          Race classification per driver per round. 
+ 
+      - name: jolpica_driver_standings
+        description: >
+          Rolling driver championship standings after each round.
+ 
+      - name: jolpica_constructor_standings
+        description: >
+          Rolling constructor championship standings after each round.
+ 
+      - name: jolpica_pit_stops
+        description: >
+          Pit stop events per driver per round. 
+ 
+      - name: jolpica_race_schedule
+        description: >
+          Race calendar with session dates and times. 
+ 
+      - name: fastf1_results
+        description: >
+          Session classification per driver per round from FastF1.
+ 
+      - name: fastf1_laps
+        description: >
+          Individual lap records per driver per round. Filtered to is_accurate=True and
+          lap_number > 1
+ 
+      - name: fastf1_weather
+        description: >
+          Weather readings sampled ~every 60 seconds per session.
+ 
+      - name: fastf1_telemetry
+        description: >
+          High-frequency car telemetry per driver.
