@@ -3,10 +3,10 @@ import os
 import sys
 from pathlib import Path
 from dotenv import load_dotenv
-from ingestion.fastf1.session_loader import load_session
-from ingestion.fastf1.telemetry_loader import get_driver_telemetry
-from ingestion.jolpica.writer import df_write_to_s3_raw
-from ingestion.jolpica.helper import logging_setup
+from ingestion.bronze.fastf1.session_loader import load_session
+from ingestion.bronze.fastf1.telemetry_loader import get_driver_telemetry
+from ingestion.bronze.jolpica.writer import df_write_to_s3_raw
+from ingestion.bronze.jolpica.helper import logging_setup
 
 logging_setup()
 

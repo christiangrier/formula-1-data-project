@@ -5,7 +5,7 @@ from pathlib import Path
 import fastf1
 import pandas as pd
 from dotenv import load_dotenv
-from ingestion.fastf1.helper import rename_columns
+from ingestion.bronze.fastf1.helper import rename_columns
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 load_dotenv(REPO_ROOT / ".env")

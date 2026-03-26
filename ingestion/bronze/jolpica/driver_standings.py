@@ -1,6 +1,6 @@
 import logging
 import pandas as pd
-from ingestion.jolpica.helper import pagination_helper, logging_setup 
+from ingestion.bronze.jolpica.helper import pagination_helper, logging_setup 
 
 # logging_setup()
 logger = logging.getLogger(__name__)
