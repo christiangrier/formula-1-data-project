@@ -34,7 +34,7 @@ def clean_fastf1_laps(df: pd.DataFrame) -> pd.DataFrame:
 
     df["deleted"] = df["deleted"].astype("boolean")
     df["ingested_at"] = pd.to_datetime(df["ingested_at"], utc=True)
-    df["driver"] = (df["driver"].str.strip().str.lower())
+    df["abbreviation"] = df["driver"]
     df["team"] = (df["team"].str.strip().str.lower().str.replace(" ", "_", regex=False))
     df["deleted_reason"] = df["deleted_reason"].replace("", None)
     df["track_status"] = df["track_status"].replace("", None)

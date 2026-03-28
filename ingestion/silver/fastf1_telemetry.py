@@ -16,7 +16,7 @@ def clean_fastf1_telemetry(df: pd.DataFrame) -> pd.DataFrame:
     df = df.drop(columns=["time"])
     df["ingested_at"] = pd.to_datetime(df["ingested_at"], utc=True)
 
-    df["driver"] = df["driver"].str.strip().str.lower()
+    df["abbreviation"] = df["driver"]
     df["team"] = (df["team"].str.strip().str.lower().str.replace(" ", "_", regex=False))
     df["driver_ahead"] = df["driver_ahead"].replace("", None)
     df["status"] = df["status"].replace("", None)

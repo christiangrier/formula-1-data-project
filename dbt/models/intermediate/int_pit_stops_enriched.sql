@@ -27,7 +27,7 @@ laps as (
     select
         season,
         round,
-        driver,
+        abbreviation,
         lap_number,
         stint,
         compound,
@@ -94,7 +94,7 @@ pit_lap_context as (
  
         -- next stint compound — from the lap immediately after the pit
         lead(l.compound) over (
-            partition by l.season, l.round, l.driver
+            partition by l.season, l.round, l.abbreviation
             order by l.lap_number
         )                               as compound_starting
  
@@ -102,7 +102,7 @@ pit_lap_context as (
     left join laps l
         on  p.season               = l.season
         and p.round                = l.round
-        and p.driver_abbreviation  = l.driver
+        and p.driver_abbreviation  = l.abbreviation
         and p.lap_pitted           = l.lap_number
  
 )

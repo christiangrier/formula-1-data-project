@@ -10,7 +10,7 @@ renamed as (
         -- identifiers
         season,
         round,
-        driver,
+        abbreviation,
         team,
         lap_number,
         date                    as telemetry_timestamp,

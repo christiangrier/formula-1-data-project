@@ -10,7 +10,7 @@ renamed as (
         -- identifiers
         season,
         round,
-        driver,
+        abbreviation,
         driver_number,
         team,
         lap_number,
@@ -23,7 +23,6 @@ renamed as (
         sector3_time_seconds,
         time_seconds            as session_elapsed_seconds,
         lap_start_time_seconds,
-        lap_start_date,
         pit_out_time_seconds,
         pit_in_time_seconds,
 
@@ -46,8 +45,6 @@ renamed as (
         -- flags
         is_personal_best,
         is_accurate,
-        deleted,
-        deleted_reason,
         fast_f1_generated,
 
         -- track

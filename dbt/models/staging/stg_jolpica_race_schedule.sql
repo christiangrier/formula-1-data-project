@@ -25,7 +25,7 @@ renamed as (
         case
             when sprint_qualy_datetime is not null then true
             else false
-        end                     as is_sprint_weekend
+        end as is_sprint_weekend
 
     from source
 

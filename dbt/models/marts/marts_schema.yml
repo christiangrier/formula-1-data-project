@@ -164,7 +164,7 @@ models:
         tests:
           - not_null
 
-      - name: driver
+      - name: abbreviation
         description: Lowercase three-letter driver abbreviation.
         tests:
           - not_null
@@ -261,7 +261,7 @@ models:
         tests:
           - not_null
 
-      - name: driver
+      - name: abbreviation
         description: Lowercase three-letter driver abbreviation.
         tests:
           - not_null
@@ -307,7 +307,7 @@ models:
         tests:
           - not_null
 
-      - name: driver
+      - name: abbreviation
         description: Lowercase three-letter driver abbreviation.
         tests:
           - not_null

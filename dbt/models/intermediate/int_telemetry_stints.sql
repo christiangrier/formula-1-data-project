@@ -9,7 +9,7 @@ with laps as (
     select
         season,
         round,
-        driver,
+        abbreviation,
         lap_number,
         stint,
         compound,
@@ -25,7 +25,7 @@ telemetry as (
     select
         season,
         round,
-        driver,
+        abbreviation,
         lap_number,
         speed,
         throttle,
@@ -44,7 +44,7 @@ telemetry_enriched as (
     select
         t.season,
         t.round,
-        t.driver,
+        t.abbreviation,
         t.lap_number,
         l.stint,
         l.compound,
@@ -61,7 +61,7 @@ telemetry_enriched as (
     left join laps l
         on  t.season     = l.season
         and t.round      = l.round
-        and t.driver     = l.driver
+        and t.abbreviation     = l.abbreviation
         and t.lap_number = l.lap_number
  
 ),
@@ -72,7 +72,7 @@ stint_aggregated as (
     select
         season,
         round,
-        driver,
+        abbreviation,
         stint,
         compound,
         fresh_tyre,
@@ -120,7 +120,7 @@ stint_aggregated as (
     group by
         season,
         round,
-        driver,
+        abbreviation,
         stint,
         compound,
         fresh_tyre

@@ -35,7 +35,7 @@ final as (
         spine.driver_number,
         spine.abbreviation,
         spine.full_name,
-        spine.country_code,
+        -- spine.country_code,
         spine.team_id,
         spine.team_name,
         spine.team_color,
@@ -58,9 +58,9 @@ final as (
         spine.fastest_lap_rank,
 
         -- qualifying
-        spine.q1_seconds,
-        spine.q2_seconds,
-        spine.q3_seconds
+        -- spine.q1_seconds,
+        -- spine.q2_seconds,
+        -- spine.q3_seconds
 
     from spine
     left join schedule

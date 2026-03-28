@@ -4,7 +4,7 @@ renamed as (
         season,
         round,
         driver_id,
-        driver_code,
+        abbreviation,
         driver_name,
         constructor,
         race_name,

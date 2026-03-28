@@ -30,13 +30,13 @@ final as (
 
     select
         -- primary key
-        {{ dbt_utils.generate_surrogate_key(['stints.season', 'stints.round', 'stints.driver', 'stints.stint']) }}
+        {{ dbt_utils.generate_surrogate_key(['stints.season', 'stints.round', 'stints.abbreviation', 'stints.stint']) }}
                                         as telemetry_stint_id,
 
         -- identifiers
         stints.season,
         stints.round,
-        stints.driver,
+        stints.abbreviation,
         di.driver_id,
         di.full_name,
         di.team_id,
@@ -72,7 +72,7 @@ final as (
     left join driver_info di
         on  stints.season = di.season
         and stints.round  = di.round
-        and stints.driver = di.abbreviation
+        and stints.abbreviation = di.abbreviation
 
 )
 

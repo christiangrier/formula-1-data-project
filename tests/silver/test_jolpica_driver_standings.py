@@ -8,7 +8,7 @@ def make_row(**overrides) -> dict:
         "season": 2026,
         "round": 2,
         "driver_id": "russell",
-        "driver_code": "RUS",
+        "abbreviation": "RUS",
         "driver_name": "George Russell",
         "driver_dob": "1998-02-15",
         "driver_country": "British",
@@ -91,9 +91,9 @@ class TestNullHandling:
         df = clean_driver_standings(make_df(make_row(constructor_country=None)))
         assert df["constructor_country"].iloc[0] == "Unknown"
 
-    def test_driver_code_null_filled_with_unk(self):
+    def test_abbreviation_null_filled_with_unk(self):
         df = clean_driver_standings(make_df(make_row(driver_code=None)))
-        assert df["driver_code"].iloc[0] == "UNK"
+        assert df["abbreviation"].iloc[0] == "UNK"
 
     def test_driver_name_null_filled_with_unknown_driver(self):
         df = clean_driver_standings(make_df(make_row(driver_name=None)))

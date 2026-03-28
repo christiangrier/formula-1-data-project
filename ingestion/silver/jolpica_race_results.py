@@ -16,7 +16,7 @@ def clean_race_results(df: pd.DataFrame) -> pd.DataFrame:
     df["constructor"] = (df["constructor"].str.strip().str.lower().str.replace(" ", "_", regex=False))
 
     df["status"] = df["status"].fillna("Unknown")
-    df["driver_code"] = df["driver_code"].fillna("UNK")
+    df["abbreviation"] = df["driver_code"].fillna("UNK")
     df["driver_name"] = df["driver_name"].fillna("Unknown Driver")
 
     before = len(df)

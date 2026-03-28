@@ -11,7 +11,7 @@ def make_row(**overrides) -> dict:
         "circuit": "Albert Park Grand Prix Circuit",
         "date": "2026-03-08",
         "driver_id": "russell",
-        "driver_code": "RUS",
+        "abbreviation": "RUS",
         "driver_name": "George Russell",
         "constructor": "Mercedes",
         "grid": 1,
@@ -98,9 +98,9 @@ class TestNullHandling:
         df = clean_race_results(make_df(make_row(status="Finished")))
         assert df["status"].iloc[0] == "Finished"
 
-    def test_driver_code_null_filled_with_unk(self):
+    def test_abbreviation_null_filled_with_unk(self):
         df = clean_race_results(make_df(make_row(driver_code=None)))
-        assert df["driver_code"].iloc[0] == "UNK"
+        assert df["abbreviation"].iloc[0] == "UNK"
 
     def test_driver_name_null_filled_with_unknown_driver(self):
         df = clean_race_results(make_df(make_row(driver_name=None)))

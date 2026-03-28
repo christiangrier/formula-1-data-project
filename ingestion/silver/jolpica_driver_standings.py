@@ -16,7 +16,7 @@ def clean_driver_standings(df: pd.DataFrame) -> pd.DataFrame:
 
     df["driver_country"] = df["driver_country"].fillna("Unknown")
     df["constructor_country"] = df["constructor_country"].fillna("Unknown")
-    df["driver_code"] = df["driver_code"].fillna("UNK")
+    df["abbreviation"] = df["driver_code"].fillna("UNK")
     df["driver_name"] = df["driver_name"].fillna("Unknown Driver")
 
     before = len(df)

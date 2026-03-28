@@ -15,7 +15,7 @@ with fastf1 as (
         first_name,
         last_name,
         full_name,
-        country_code,
+        -- country_code,
         team_id,
         team_name,
         team_color,
@@ -26,9 +26,9 @@ with fastf1 as (
         points                  as fastf1_points,
         status                  as fastf1_status,
         race_time_seconds,
-        q1_seconds,
-        q2_seconds,
-        q3_seconds
+        -- q1_seconds,
+        -- q2_seconds,
+        -- q3_seconds
  
     from {{ ref('stg_fastf1_results') }}
  
@@ -65,7 +65,7 @@ joined as (
         fastf1.first_name,
         fastf1.last_name,
         fastf1.full_name,
-        fastf1.country_code,
+        -- fastf1.country_code,
         fastf1.team_id,
         fastf1.team_name,
         fastf1.team_color,
@@ -96,9 +96,9 @@ joined as (
         jolpica.fastest_lap_rank,
  
         -- qualifying times
-        fastf1.q1_seconds,
-        fastf1.q2_seconds,
-        fastf1.q3_seconds
+        -- fastf1.q1_seconds,
+        -- fastf1.q2_seconds,
+        -- fastf1.q3_seconds
  
     from fastf1
     left join jolpica

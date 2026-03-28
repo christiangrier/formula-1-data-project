@@ -15,18 +15,18 @@ def clean_fastf1_results(df: pd.DataFrame) -> pd.DataFrame:
     df["grid_position"] = pd.to_numeric(df["grid_position"], errors="coerce").astype("Int64")
     df["laps"] = pd.to_numeric(df["laps"], errors="coerce").astype("Int64")
     df["time_seconds"] = nanoseconds_to_seconds(df["time"])
-    df = df.drop(columns=["time"])
 
+    df = df.drop(columns=["time"])
     for col in ["q1", "q2", "q3"]:
-        df[f"{col}_seconds"] = nanoseconds_to_seconds(df[col])
+        # df[f"{col}_seconds"] = nanoseconds_to_seconds(df[col])
         df = df.drop(columns=[col])
+    df = df.drop(columns=["country_code"])
 
     df["driver_id"] = (df["driver_id"].str.strip().str.lower().str.replace(" ", "_", regex=False))
     df["team_id"] = (df["team_id"].str.strip().str.lower().str.replace(" ", "_", regex=False))
 
     df["status"] = df["status"].fillna("Unknown")
     df["classified_position"] = df["classified_position"].fillna("Unknown")
-    df["country_code"] = df["country_code"].replace("", None).fillna("Unknown")
     df["first_name"] = df["first_name"].fillna("Unknown")
     df["last_name"] = df["last_name"].fillna("Unknown")
     df["full_name"] = df["full_name"].fillna("Unknown Driver")

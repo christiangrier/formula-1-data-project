@@ -11,7 +11,7 @@ renamed as (
         season,
         round,
         driver_id,
-        driver_code,
+        abbreviation,
         driver_name,
         driver_dob,
         driver_country,

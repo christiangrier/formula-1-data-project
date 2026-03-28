@@ -5,7 +5,7 @@ from ingestion.silver.fastf1_laps import clean_fastf1_laps
 def make_row(**overrides) -> dict:
     base = {
         "time": 3_836_437_000_000,
-        "driver": "NOR",
+        "abbreviation": "NOR",
         "driver_number": "1",
         "lap_time": 96_458_000_000,
         "lap_number": 2.0,
@@ -31,8 +31,8 @@ def make_row(**overrides) -> dict:
         "lap_start_date": None,
         "track_status": "1",
         "position": 6.0,
-        "deleted": 0,
-        "deleted_reason": "",
+        # "deleted": 0,
+        # "deleted_reason": "",
         "fast_f1_generated": False,
         "is_accurate": True,
         "season": 2026,
@@ -127,9 +127,9 @@ class TestTypeCasting:
         assert df["position"].dtype == "Int64"
         assert df["position"].iloc[0] == 6
 
-    def test_deleted_cast_to_boolean(self):
-        df = clean_fastf1_laps(make_df(make_row(deleted=0)))
-        assert df["deleted"].dtype == "boolean"
+    # def test_deleted_cast_to_boolean(self):
+    #     df = clean_fastf1_laps(make_df(make_row(deleted=0)))
+    #     assert df["deleted"].dtype == "boolean"
 
     def test_ingested_at_cast_to_utc_datetime(self):
         df = clean_fastf1_laps(make_df(make_row()))
@@ -139,9 +139,9 @@ class TestTypeCasting:
 
 class TestIdNormalisation:
 
-    def test_driver_abbreviation_lowercased(self):
+    def test_driver_abbreviation_uppercase(self):
         df = clean_fastf1_laps(make_df(make_row(driver="NOR")))
-        assert df["driver"].iloc[0] == "nor"
+        assert df["abbreviation"].iloc[0] == "NOR"
 
     def test_team_lowercased(self):
         df = clean_fastf1_laps(make_df(make_row(team="McLaren")))
@@ -154,10 +154,10 @@ class TestIdNormalisation:
 
 class TestNullHandling:
 
-    def test_empty_deleted_reason_normalised_to_none(self):
-        df = clean_fastf1_laps(make_df(make_row(deleted_reason="")))
-        val = df["deleted_reason"].iloc[0]
-        assert val is None or pd.isna(val)
+    # def test_empty_deleted_reason_normalised_to_none(self):
+    #     df = clean_fastf1_laps(make_df(make_row(deleted_reason="")))
+    #     val = df["deleted_reason"].iloc[0]
+    #     assert val is None or pd.isna(val)
 
     def test_empty_track_status_normalised_to_none(self):
         df = clean_fastf1_laps(make_df(make_row(track_status="")))

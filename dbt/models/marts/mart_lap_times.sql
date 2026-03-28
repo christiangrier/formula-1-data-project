@@ -31,13 +31,13 @@ final as (
  
     select
         -- primary key
-        {{ dbt_utils.generate_surrogate_key(['laps.season', 'laps.round', 'laps.driver', 'laps.lap_number']) }}
+        {{ dbt_utils.generate_surrogate_key(['laps.season', 'laps.round', 'laps.abbreviation', 'laps.lap_number']) }}
                                         as lap_id,
  
         -- identifiers
         laps.season,
         laps.round,
-        laps.driver,
+        laps.abbreviation,
         di.driver_id,
         di.full_name,
         di.team_id,
@@ -66,12 +66,12 @@ final as (
         -- lap flags
         laps.is_accurate,
         laps.is_personal_best,
-        laps.deleted,
-        laps.deleted_reason,
+        -- laps.deleted,
+        -- laps.deleted_reason,
  
         -- track conditions
         laps.track_status,
-        laps.position                   as track_position,
+        laps.position as track_position,
  
         -- pit timing
         laps.pit_out_time_seconds,
@@ -81,7 +81,7 @@ final as (
     left join driver_info di
         on  laps.season = di.season
         and laps.round  = di.round
-        and laps.driver = di.abbreviation
+        and laps.abbreviation = di.abbreviation
  
 )
  

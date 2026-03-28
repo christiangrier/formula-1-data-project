@@ -17,14 +17,13 @@ renamed as (
         first_name,
         last_name,
         full_name,
-        country_code,
         team_id,
         team_name,
         team_color,
 
         -- result
         grid_position,
-        position                as finish_position,
+        position as finish_position,
         classified_position,
         laps,
         status,
@@ -34,9 +33,9 @@ renamed as (
         time_seconds            as race_time_seconds,
 
         -- qualifying times (null for non-qualifying sessions)
-        q1_seconds,
-        q2_seconds,
-        q3_seconds
+        -- q1_seconds,
+        -- q2_seconds,
+        -- q3_seconds
 
     from source
 

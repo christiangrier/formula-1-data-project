@@ -20,7 +20,7 @@ models:
         description: Lowercase snake_case driver identifier, e.g. "russell".
         tests:
           - not_null
-      - name: driver_code
+      - name: abbreviation
         description: Three-letter driver abbreviation, e.g. "RUS".
         tests:
           - not_null
@@ -70,7 +70,7 @@ models:
         description: Lowercase snake_case driver identifier, e.g. "russell".
         tests:
           - not_null
-      - name: driver_code
+      - name: abbreviation
         description: Three-letter driver abbreviation, e.g. "RUS".
       - name: driver_name
         description: Full driver name.
@@ -257,12 +257,12 @@ models:
         description: Championship points awarded.
       - name: race_time_seconds
         description: Total race time in seconds for the classified finisher.
-      - name: q1_seconds
-        description: Q1 lap time in seconds. Null for race sessions.
-      - name: q2_seconds
-        description: Q2 lap time in seconds. Null if driver did not reach Q2.
-      - name: q3_seconds
-        description: Q3 lap time in seconds. Null if driver did not reach Q3.
+      # - name: q1_seconds
+      #   description: Q1 lap time in seconds. Null for race sessions.
+      # - name: q2_seconds
+      #   description: Q2 lap time in seconds. Null if driver did not reach Q2.
+      # - name: q3_seconds
+      #   description: Q3 lap time in seconds. Null if driver did not reach Q3.
 
   - name: stg_fastf1_laps
     description: >
@@ -280,8 +280,8 @@ models:
         description: Round number within the season.
         tests:
           - not_null
-      - name: driver
-        description: Lowercase three-letter driver abbreviation, e.g. "nor".
+      - name: abbreviation
+        description: Uppercase three-letter driver abbreviation, e.g. "nor".
         tests:
           - not_null
       - name: lap_number
@@ -364,8 +364,8 @@ models:
         description: Round number within the season.
         tests:
           - not_null
-      - name: driver
-        description: Lowercase three-letter driver abbreviation, e.g. "nor".
+      - name: abbreviation
+        description: Uppercase three-letter driver abbreviation, e.g. "nor".
         tests:
           - not_null
       - name: lap_number

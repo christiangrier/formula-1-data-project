@@ -24,7 +24,7 @@ def make_row(**overrides) -> dict:
         "z": 88.0,
         "season": 2026,
         "round": 1,
-        "driver": "NOR",
+        "abbreviation": "NOR",
         "team": "McLaren",
         "lap_number": 1,
         "ingested_at": "2026-03-22T03:12:16.206831+00:00",
@@ -81,9 +81,9 @@ class TestDateCasting:
 
 class TestIdNormalisation:
 
-    def test_driver_abbreviation_lowercased(self):
+    def test_driver_abbreviation_uppercase(self):
         df = clean_fastf1_telemetry(make_df(make_row(driver="NOR")))
-        assert df["driver"].iloc[0] == "nor"
+        assert df["abbreviation"].iloc[0] == "NOR"
 
     def test_team_lowercased(self):
         df = clean_fastf1_telemetry(make_df(make_row(team="McLaren")))
@@ -95,7 +95,7 @@ class TestIdNormalisation:
 
     def test_driver_no_underscore_added(self):
         df = clean_fastf1_telemetry(make_df(make_row(driver="RUS")))
-        assert df["driver"].iloc[0] == "rus"
+        assert df["abbreviation"].iloc[0] == "RUS"
 
 
 class TestNullHandling:
@@ -122,11 +122,11 @@ class TestNullHandling:
 class TestRowDropping:
 
     def test_null_distance_row_dropped(self):
-        row_valid = make_row(driver="nor", lap_number=2)
-        row_null = make_row(driver="rus", lap_number=2, distance=None)
+        row_valid = make_row(abbreviation="NOR", lap_number=2)
+        row_null = make_row(abbreviation="RUS", lap_number=2, distance=None)
         df = clean_fastf1_telemetry(make_df(row_valid, row_null))
         assert len(df) == 1
-        assert df["driver"].iloc[0] == "nor"
+        assert df["abbreviation"].iloc[0] == "NOR"
 
     def test_valid_distance_zero_kept(self):
         row = make_row(distance=0.0)
@@ -153,8 +153,8 @@ class TestDeduplication:
         assert len(df) == 2
 
     def test_different_drivers_same_timestamp_not_deduped(self):
-        row1 = make_row(driver="NOR", date="2026-03-08 04:03:26.366")
-        row2 = make_row(driver="RUS", date="2026-03-08 04:03:26.366")
+        row1 = make_row(abbreviation="NOR", date="2026-03-08 04:03:26.366")
+        row2 = make_row(abbreviation="RUS", date="2026-03-08 04:03:26.366")
         df = clean_fastf1_telemetry(make_df(row1, row2))
         assert len(df) == 2
 
