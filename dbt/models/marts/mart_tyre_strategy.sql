@@ -102,7 +102,7 @@ final as (
     left join driver_info di
         on  stints.season = di.season
         and stints.round  = di.round
-        -- and stints.abbreviation = di.abbreviation
+        and stints.abbreviation = di.abbreviation
 
 )
 

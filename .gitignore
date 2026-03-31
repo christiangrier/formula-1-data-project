@@ -4,6 +4,17 @@ env/
 ENV/
 .Python
 __pycache__
+__init__.py
+__file__.py
+__name__.py
+__package__.py
+__path__.py
+__spec__.py
+__version__.py
+__author__.py
+__copyright__.py
+__license__.py
+__credits__.py
 test.py
 dist/
 build/

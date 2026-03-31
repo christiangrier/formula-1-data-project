@@ -64,8 +64,8 @@ final as (
         laps.fresh_tyre,
  
         -- lap flags
-        laps.is_accurate,
-        laps.is_personal_best,
+        -- laps.is_accurate,
+        -- laps.is_personal_best,
         -- laps.deleted,
         -- laps.deleted_reason,
  
