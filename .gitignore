@@ -15,6 +15,7 @@ __author__.py
 __copyright__.py
 __license__.py
 __credits__.py
+.pytest_cache
 test.py
 dist/
 build/

@@ -1,0 +1,122 @@
+/* ── Reset & Base ──────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+    background-color: #0F0F0F;
+    color: #F0F0F0;
+}
+
+/* ── Dash Dropdown Dark Theme ──────────────────────────────────────────── */
+.Select-control {
+    background-color: #1A1A1A !important;
+    border-color: #2E2E2E !important;
+    color: #F0F0F0 !important;
+    border-radius: 4px !important;
+    min-height: 28px !important;
+    height: 28px !important;
+}
+
+.Select-value, .Select-value-label {
+    color: #F0F0F0 !important;
+    line-height: 28px !important;
+}
+
+.Select-placeholder {
+    color: #9A9A9A !important;
+    line-height: 28px !important;
+}
+
+.Select-arrow-zone, .Select-clear-zone {
+    color: #9A9A9A !important;
+}
+
+.Select-menu-outer {
+    background-color: #1A1A1A !important;
+    border: 0.5px solid #2E2E2E !important;
+    border-radius: 4px !important;
+    z-index: 9999 !important;
+}
+
+.Select-option {
+    background-color: #1A1A1A !important;
+    color: #F0F0F0 !important;
+    font-size: 12px !important;
+    padding: 6px 10px !important;
+}
+
+.Select-option.is-focused {
+    background-color: #242424 !important;
+}
+
+.Select-option.is-selected {
+    background-color: #2E2E2E !important;
+}
+
+.Select-input > input {
+    color: #F0F0F0 !important;
+}
+
+/* VirtualizedSelect */
+.VirtualizedSelectFocusedOption {
+    background-color: #242424 !important;
+}
+
+/* ── Nav Links ─────────────────────────────────────────────────────────── */
+.f1-nav-link {
+    color: #9A9A9A;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 4px;
+    letter-spacing: 0.02em;
+    transition: color 0.15s, background-color 0.15s;
+    white-space: nowrap;
+}
+
+.f1-nav-link:hover {
+    color: #F0F0F0;
+    background-color: #242424;
+    text-decoration: none;
+}
+
+.f1-nav-link-active {
+    color: #F0F0F0 !important;
+    background-color: #2E2E2E !important;
+    text-decoration: none !important;
+}
+
+/* ── Metric Cards ──────────────────────────────────────────────────────── */
+.metric-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #9A9A9A;
+    margin-bottom: 2px;
+}
+
+.metric-value {
+    font-size: 20px;
+    font-weight: 500;
+    color: #F0F0F0;
+}
+
+.metric-value-sm {
+    font-size: 16px;
+    font-weight: 500;
+    color: #F0F0F0;
+}
+
+/* ── Plotly chart container fill ──────────────────────────────────────── */
+.dash-graph {
+    height: 100%;
+}
+
+/* ── Scrollbar hide ────────────────────────────────────────────────────── */
+::-webkit-scrollbar { display: none; }
+* { -ms-overflow-style: none; scrollbar-width: none; }
