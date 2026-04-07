@@ -204,11 +204,12 @@ def update_tyre_chart(store):
                 insidetextanchor="middle",
                 constraintext="inside",
                 textfont=dict(size=9, color="#0F0F0F", family="Inter, sans-serif"),
+                customdata=subset["visual_length"],
                 hovertemplate=(
                     "<b>%{y}</b><br>"
                     f"Compound: {compound}<br>"
                     "Start lap: %{base}<br>"
-                    "Length: %{x} laps<extra></extra>"
+                    "Laps on tyre: %{customdata}<extra></extra>"
                 ),
             )
         )

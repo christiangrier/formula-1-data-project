@@ -32,7 +32,7 @@ _round_opts = (
     if _rounds_df is not None and not _rounds_df.empty
     else []
 )
-_default_round = _round_opts[0]["value"] if _round_opts else None
+_default_round = _round_opts[-1]["value"] if _round_opts else None
 
 # ── App init ───────────────────────────────────────────────────────────────────
 app = Dash(
@@ -141,7 +141,7 @@ def _update_rounds(season):
         return [], None
     df = get_rounds(season)
     opts = [{"label": r["race_name"], "value": r["round"]} for _, r in df.iterrows()]
-    return opts, (opts[0]["value"] if opts else None)
+    return opts, (opts[-1]["value"] if opts else None)
 
 
 @callback(

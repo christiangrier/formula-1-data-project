@@ -14,7 +14,8 @@ logger = logging.getLogger(__name__)
 
 def get_driver_telemetry(year: int, round_number: int) -> pd.DataFrame:
 
-    cache_path = REPO_ROOT / os.getenv("FASTF1_CACHE_PATH", "data/fastf1_cache")
+    cache_path = REPO_ROOT / os.getenv("FASTF1_CACHE_PATH", "dbt/data/fastf1_cache")
+    cache_path.mkdir(parents=True, exist_ok=True)
     fastf1.Cache.enable_cache(str(cache_path))
 
     session = fastf1.get_session(year, round_number, "R")

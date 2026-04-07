@@ -15,6 +15,7 @@ import numpy as np
 
 from data.queries import (
     COMPOUND_COLORS,
+    get_race_results,
     get_drivers_for_round,
     get_lap_times_for_drivers,
     get_sector_averages,
@@ -30,8 +31,32 @@ BORDER   = "#2E2E2E"
 TEXT_PRI = "#F0F0F0"
 TEXT_SEC = "#9A9A9A"
 
-COLOR_A  = "#FF8000"
-COLOR_B  = "#27F4D2"
+COLOR_A_DEFAULT = "#FF8000"
+COLOR_B_DEFAULT = "#27F4D2"
+
+_DOT_STYLE_BASE = {
+    "width": "10px", "height": "10px", "borderRadius": "50%",
+    "marginRight": "8px", "flexShrink": "0",
+}
+
+
+def _dot_style(color: str) -> dict:
+    return {**_DOT_STYLE_BASE, "backgroundColor": color}
+
+
+def _resolve_colors(season, round_num, driver_a, driver_b) -> tuple[str, str]:
+    """Return (color_a, color_b) from team colors in the results data.
+    If both drivers share a color, driver B is set to white."""
+    try:
+        results = get_race_results(season, round_num)
+        color_map = results.set_index("abbreviation")["team_color"].to_dict()
+        color_a = color_map.get(driver_a, COLOR_A_DEFAULT)
+        color_b = color_map.get(driver_b, COLOR_B_DEFAULT)
+        if color_a.lower() == color_b.lower():
+            color_b = "#FFFFFF"
+        return color_a, color_b
+    except Exception:
+        return COLOR_A_DEFAULT, COLOR_B_DEFAULT
 
 HEADER_H  = "50px"
 CONTENT_H = f"calc(100vh - 44px - {HEADER_H})"
@@ -96,17 +121,14 @@ def _metric_card(label: str, value: str, sub: str = "", color: str = TEXT_PRI) -
 # ── Layout ─────────────────────────────────────────────────────────────────────
 layout = html.Div(
     [
+        dcc.Store(id="dc-driver-colors", data={"a": COLOR_A_DEFAULT, "b": COLOR_B_DEFAULT}),
+
         # ── Driver selector header ─────────────────────────────────────────
         html.Div(
             [
                 html.Div(
                     [
-                        html.Div(
-                            style={
-                                "width": "10px", "height": "10px", "borderRadius": "50%",
-                                "backgroundColor": COLOR_A, "marginRight": "8px", "flexShrink": "0",
-                            }
-                        ),
+                        html.Div(id="dc-dot-a", style=_dot_style(COLOR_A_DEFAULT)),
                         dcc.Dropdown(
                             id="dc-driver-a",
                             options=[],
@@ -120,12 +142,7 @@ layout = html.Div(
                 html.Span("vs", style={"color": TEXT_SEC, "fontSize": "13px", "fontWeight": "500", "margin": "0 20px"}),
                 html.Div(
                     [
-                        html.Div(
-                            style={
-                                "width": "10px", "height": "10px", "borderRadius": "50%",
-                                "backgroundColor": COLOR_B, "marginRight": "8px", "flexShrink": "0",
-                            }
-                        ),
+                        html.Div(id="dc-dot-b", style=_dot_style(COLOR_B_DEFAULT)),
                         dcc.Dropdown(
                             id="dc-driver-b",
                             options=[],
@@ -247,14 +264,39 @@ layout = html.Div(
 
 # ── Callbacks ──────────────────────────────────────────────────────────────────
 @callback(
+    Output("dc-driver-colors", "data"),
+    Output("dc-dot-a", "style"),
+    Output("dc-dot-b", "style"),
+    Input("race-store", "data"),
+    Input("dc-driver-a", "value"),
+    Input("dc-driver-b", "value"),
+)
+def update_driver_colors(store, driver_a, driver_b):
+    season, round_num = store.get("season"), store.get("round")
+    if not all([season, round_num, driver_a, driver_b]):
+        return (
+            {"a": COLOR_A_DEFAULT, "b": COLOR_B_DEFAULT},
+            _dot_style(COLOR_A_DEFAULT),
+            _dot_style(COLOR_B_DEFAULT),
+        )
+    color_a, color_b = _resolve_colors(season, round_num, driver_a, driver_b)
+    return (
+        {"a": color_a, "b": color_b},
+        _dot_style(color_a),
+        _dot_style(color_b),
+    )
+
+
+@callback(
     Output("dc-driver-a", "options"),
     Output("dc-driver-a", "value"),
     Output("dc-driver-b", "options"),
     Output("dc-driver-b", "value"),
     Input("race-store", "data"),
     Input("dc-driver-a", "value"),
+    State("dc-driver-b", "value"),
 )
-def update_driver_dropdowns(store, current_driver_a):
+def update_driver_dropdowns(store, current_driver_a, current_driver_b):
     from dash import ctx
 
     season, round_num = store.get("season"), store.get("round")
@@ -267,24 +309,33 @@ def update_driver_dropdowns(store, current_driver_a):
 
     opts = [{"label": d, "value": d} for d in drivers]
 
-    # When the race changes, reset driver A to first driver in results
+    # When the race changes, reset both drivers
     if ctx.triggered_id == "race-store" or current_driver_a not in drivers:
         driver_a = drivers[0]
+        b_opts   = [{"label": d, "value": d} for d in drivers if d != driver_a]
+        driver_b = b_opts[0]["value"] if b_opts else None
     else:
         driver_a = current_driver_a
+        b_opts   = [{"label": d, "value": d} for d in drivers if d != driver_a]
+        # Preserve driver B if still valid and not the same as the new driver A
+        if current_driver_b and current_driver_b in drivers and current_driver_b != driver_a:
+            driver_b = current_driver_b
+        else:
+            driver_b = b_opts[0]["value"] if b_opts else None
 
-    b_opts   = [{"label": d, "value": d} for d in drivers if d != driver_a]
-    driver_b = b_opts[0]["value"] if b_opts else None
     return opts, driver_a, b_opts, driver_b
 
 
 @callback(
     Output("dc-laptime-chart", "figure"),
     Input("race-store", "data"),
-    Input("dc-driver-a", "value"),
-    Input("dc-driver-b", "value"),
+    Input("dc-driver-colors", "data"),
+    State("dc-driver-a", "value"),
+    State("dc-driver-b", "value"),
 )
-def update_laptime_chart(store, driver_a, driver_b):
+def update_laptime_chart(store, colors, driver_a, driver_b):
+    COLOR_A = (colors or {}).get("a", COLOR_A_DEFAULT)
+    COLOR_B = (colors or {}).get("b", COLOR_B_DEFAULT)
     season, round_num = store.get("season"), store.get("round")
     if not all([season, round_num, driver_a, driver_b]):
         return go.Figure()
@@ -355,10 +406,11 @@ def update_laptime_chart(store, driver_a, driver_b):
 @callback(
     Output("dc-delta-content", "children"),
     Input("race-store", "data"),
-    Input("dc-driver-a", "value"),
-    Input("dc-driver-b", "value"),
+    Input("dc-driver-colors", "data"),
+    State("dc-driver-a", "value"),
+    State("dc-driver-b", "value"),
 )
-def update_delta(store, driver_a, driver_b):
+def update_delta(store, colors, driver_a, driver_b):
     season, round_num = store.get("season"), store.get("round")
     if not all([season, round_num, driver_a, driver_b]):
         return html.Div("Select drivers", style={"color": TEXT_SEC, "fontSize": "11px"})
@@ -424,10 +476,13 @@ def update_delta(store, driver_a, driver_b):
 @callback(
     Output("dc-bestlap-content", "children"),
     Input("race-store", "data"),
-    Input("dc-driver-a", "value"),
-    Input("dc-driver-b", "value"),
+    Input("dc-driver-colors", "data"),
+    State("dc-driver-a", "value"),
+    State("dc-driver-b", "value"),
 )
-def update_bestlap(store, driver_a, driver_b):
+def update_bestlap(store, colors, driver_a, driver_b):
+    COLOR_A = (colors or {}).get("a", COLOR_A_DEFAULT)
+    COLOR_B = (colors or {}).get("b", COLOR_B_DEFAULT)
     season, round_num = store.get("season"), store.get("round")
     if not all([season, round_num, driver_a, driver_b]):
         return html.Div()
@@ -479,10 +534,13 @@ def update_bestlap(store, driver_a, driver_b):
 @callback(
     Output("dc-telemetry-content", "children"),
     Input("race-store", "data"),
-    Input("dc-driver-a", "value"),
-    Input("dc-driver-b", "value"),
+    Input("dc-driver-colors", "data"),
+    State("dc-driver-a", "value"),
+    State("dc-driver-b", "value"),
 )
-def update_telemetry_content(store, driver_a, driver_b):
+def update_telemetry_content(store, colors, driver_a, driver_b):
+    COLOR_A = (colors or {}).get("a", COLOR_A_DEFAULT)
+    COLOR_B = (colors or {}).get("b", COLOR_B_DEFAULT)
     season, round_num = store.get("season"), store.get("round")
     if not all([season, round_num, driver_a, driver_b]):
         return html.Div("Select drivers", style={"color": TEXT_SEC, "fontSize": "11px"})
@@ -555,10 +613,13 @@ def update_telemetry_content(store, driver_a, driver_b):
 @callback(
     Output("dc-consistency-chart", "figure"),
     Input("race-store", "data"),
-    Input("dc-driver-a", "value"),
-    Input("dc-driver-b", "value"),
+    Input("dc-driver-colors", "data"),
+    State("dc-driver-a", "value"),
+    State("dc-driver-b", "value"),
 )
-def update_consistency_chart(store, driver_a, driver_b):
+def update_consistency_chart(store, colors, driver_a, driver_b):
+    COLOR_A = (colors or {}).get("a", COLOR_A_DEFAULT)
+    COLOR_B = (colors or {}).get("b", COLOR_B_DEFAULT)
     season, round_num = store.get("season"), store.get("round")
     fig = go.Figure()
 

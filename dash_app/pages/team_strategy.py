@@ -208,11 +208,12 @@ def update_pitstop_chart(store):
                 marker_color=color,
                 marker_line_color="#111111",
                 marker_line_width=0.8,
+                customdata=subset["visual_length"],
                 hovertemplate=(
                     "<b>%{y}</b><br>"
                     f"Compound: {compound}<br>"
                     "Start lap: %{base}<br>"
-                    "Length: %{x} laps<extra></extra>"
+                    "Laps on tyre: %{customdata}<extra></extra>"
                 ),
             )
         )
