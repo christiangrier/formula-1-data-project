@@ -27,30 +27,54 @@ def get_driver_telemetry(year: int, round_number: int) -> pd.DataFrame:
     for driver in drivers:
         driver_laps = session.laps.pick_drivers(driver)
 
-        for _, lap in driver_laps.iterlaps():
-            try:
-                telemetry = pd.DataFrame(lap.get_telemetry())
-                telemetry = rename_columns(telemetry)
+        try:
+            telemetry = driver_laps.get_telemetry()
+        except Exception as e:
+            logger.warning(f"Telemetry unavailable for driver={driver}: {e}")
+            continue
 
-                telemetry["season"] = year
-                telemetry["round"] = round_number
-                telemetry["driver"] = lap["Driver"]
-                telemetry["team"] = lap["Team"]
-                telemetry["lap_number"] = int(lap["LapNumber"])
+        if telemetry.empty:
+            continue
 
-                all_telemetry.append(telemetry)
+        telemetry = telemetry.reset_index(drop=True)
+        telemetry = rename_columns(telemetry)
 
-            except Exception as e:
-                logger.warning(
-                    f"Telemetry unavailable for driver={driver} lap={lap['LapNumber']}: {e}"
-                )
-                continue
+        telemetry = telemetry.sort_values("session_time").reset_index(drop=True)
+
+        laps_sorted = (
+            driver_laps[["LapNumber", "LapStartTime"]]
+            .dropna(subset=["LapStartTime"])
+            .reset_index(drop=True)
+            .sort_values("LapStartTime")
+        )
+
+        if laps_sorted.empty:
+            logger.warning(f"No valid lap start times for driver={driver}, skipping")
+            continue
+
+        telemetry = pd.merge_asof(
+            telemetry,
+            laps_sorted,
+            left_on="session_time",
+            right_on="LapStartTime",
+            direction="backward",
+        ).rename(columns={"LapNumber": "lap_number"})
+
+        telemetry["season"] = year
+        telemetry["round"] = round_number
+        telemetry["driver"] = driver
+        telemetry["team"] = driver_laps["Team"].iloc[0]
+        telemetry["lap_number"] = telemetry["lap_number"].astype("Int64")
+        telemetry = telemetry.drop(columns=["LapStartTime"])
+        cols = [c for c in telemetry.columns if c != "lap_number"] + ["lap_number"]
+        telemetry = telemetry[cols]
+
+        all_telemetry.append(telemetry)
 
     df = pd.concat(all_telemetry, ignore_index=True)
 
     logger.info(
-        f"Telemetry loaded for year={year} and round={round_number} "
-        f"rows={len(df)}"
+        f"Telemetry loaded for year={year} and round={round_number} rows={len(df)}"
     )
 
     return df

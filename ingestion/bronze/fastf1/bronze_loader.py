@@ -22,6 +22,7 @@ def config_s3(con: duckdb.DuckDBPyConnection) -> None:
         SET s3_access_key_id = '{os.getenv("AWS_ACCESS_KEY_ID")}';
         SET s3_secret_access_key = '{os.getenv("AWS_SECRET_ACCESS_KEY")}';
         SET s3_region = '{os.getenv("AWS_REGION")}';
+        SET http_timeout = 1200;
     """
     )
     logger.info("Duckdb connection config for S3 success")
