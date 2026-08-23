@@ -4,7 +4,7 @@ from pathlib import Path
 import duckdb
 import pandas as pd
 from dotenv import load_dotenv
-from ingestion.silver.helpers import log_silver_summary, nanoseconds_to_seconds, write_to_silver
+from ingestion.silver.helpers import log_silver_summary, nanoseconds_to_seconds, write_to_silver_fastf1
 
 logger = logging.getLogger(__name__)
 
@@ -39,16 +39,17 @@ def clean_fastf1_results(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
-def run(con: duckdb.DuckDBPyConnection) -> None:
+def run(con: duckdb.DuckDBPyConnection, year:int, round_number:int) -> None:
     table = "fastf1_results"
-    logger.info("Reading bronze.%s", table)
-    df = con.execute("SELECT * FROM bronze.fastf1_results").df()
+    logger.info("Reading bronze.%s for round %d", table, round_number)
+    
+    df = con.execute("SELECT * FROM bronze.fastf1_results WHERE season = ? AND round = ?", [year, round_number]).df()
     bronze_count = len(df)
 
     logger.info("Cleaning %d rows", bronze_count)
     df = clean_fastf1_results(df)
 
-    write_to_silver(df, con, table)
+    write_to_silver_fastf1(df, con, table, year, round_number)
     log_silver_summary(table, bronze_count, len(df))
 
 if __name__ == "__main__":

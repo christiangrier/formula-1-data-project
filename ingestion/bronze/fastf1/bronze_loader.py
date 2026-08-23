@@ -27,30 +27,56 @@ def config_s3(con: duckdb.DuckDBPyConnection) -> None:
     )
     logger.info("Duckdb connection config for S3 success")
 
-def load_table(con: duckdb.DuckDBPyConnection, s3_path: str, table_name: str) -> None:
-    con.execute(f"""
-        CREATE OR REPLACE TABLE {table_name} AS 
-        SELECT * FROM read_parquet('{s3_path}')
-    """
+def load_table(con: duckdb.DuckDBPyConnection, s3_path: str, table_name: str, year: int, round_number: int) -> None:
+    table_exists = con.execute(
+        """
+        SELECT COUNT(*) FROM information_schema.tables
+        WHERE table_schema || '.' || table_name = ?
+        """,
+        [table_name],
+    ).fetchone()[0] > 0
+
+    if not table_exists:
+        con.execute(f"""
+            CREATE TABLE {table_name} AS
+            SELECT * FROM read_parquet('{s3_path}')
+            LIMIT 0
+        """)
+        logger.info(f"{table_name} did not exist, created empty table from schema")
+
+    con.execute(
+        f"DELETE FROM {table_name} WHERE season = ? AND round = ?",
+        [year, round_number],
     )
+    con.execute(f"""
+        INSERT INTO {table_name}
+        SELECT * FROM read_parquet('{s3_path}')
+    """)
 
     row_count = con.execute(
-        f"SELECT COUNT(*) FROM {table_name}"
+        f"SELECT COUNT(*) FROM {table_name} WHERE season = ? AND round = ?",
+        [year, round_number],
     ).fetchone()[0]
 
-    logger.info(f"{table_name} and total of {row_count} loaded")
+    total_count = con.execute(f"SELECT COUNT(*) FROM {table_name}").fetchone()[0]
 
-def load_fastf1_bronze(con: duckdb.DuckDBPyConnection, year: int, bucket: str = None) -> None:
+    logger.info(
+        f"{table_name}: {row_count} rows loaded for round {round_number} "
+        f"(table total={total_count})"
+    )
+
+
+def load_fastf1_bronze(con: duckdb.DuckDBPyConnection, year: int, round_number: int, bucket: str = None) -> None:
     if bucket is None:
         bucket = os.getenv("S3_BUCKET_RAW")
     
     config_s3(con)
 
     for endpoint in ENDPOINTS:
-        s3_path = f"s3://{bucket}/fastf1/{year}/*/{endpoint}.parquet"
+        s3_path = f"s3://{bucket}/fastf1/{year}/{round_number}/{endpoint}.parquet"
         table_name = f"bronze.fastf1_{endpoint}"
         logger.info(f"Loading {s3_path} to {table_name}")
-        load_table(con, s3_path, table_name)
+        load_table(con, s3_path, table_name, year, round_number)
 
 def verify_bronze_tables(con: duckdb.DuckDBPyConnection) -> None:
 

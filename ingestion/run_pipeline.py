@@ -55,16 +55,19 @@ from ingestion.silver import (
     jolpica_race_schedule,
 )
 
-_SILVER_MODULES = [
-    fastf1_laps,
-    fastf1_results,
-    fastf1_telemetry,
-    fastf1_weather,
+_JOLPICA_SILVER_MODULES = [
     jolpica_race_results,
     jolpica_driver_standings,
     jolpica_constructor_standings,
     jolpica_pit_stops,
-    jolpica_race_schedule,
+    jolpica_race_schedule
+]
+
+_FASTF1_SILVER_MODULES = [
+    fastf1_laps,
+    fastf1_results,
+    fastf1_telemetry,
+    fastf1_weather
 ]
 
 _JOLPICA_YEAR_ENDPOINTS = [
@@ -110,12 +113,12 @@ def stage_fastf1_api(year: int, round_number: int) -> None:
     logger.info("Stage 2 complete")
 
 
-def stage_bronze_load(con: duckdb.DuckDBPyConnection, year: int) -> None:
+def stage_bronze_load(con: duckdb.DuckDBPyConnection, year: int, round_number: int) -> None:
     """Load S3 Parquet files into bronze.* DuckDB tables."""
     logger.info("── Stage 3: S3 → Bronze DuckDB ──")
 
     load_jolpica_bronze(con, year=year)
-    load_fastf1_bronze(con, year=year)
+    load_fastf1_bronze(con, year=year, round_number=round_number)
 
     logger.info("Bronze table verification:")
     verify_bronze_tables(con)
@@ -124,15 +127,24 @@ def stage_bronze_load(con: duckdb.DuckDBPyConnection, year: int) -> None:
     logger.info("Stage 3 complete")
 
 
-def stage_silver(con: duckdb.DuckDBPyConnection) -> None:
+def stage_silver(con: duckdb.DuckDBPyConnection, year: int, round_number: int) -> None:
     """Run all silver cleaning scripts against bronze.* tables."""
     logger.info("── Stage 4: Bronze → Silver DuckDB ──")
 
-    for module in _SILVER_MODULES:
+    for module in _JOLPICA_SILVER_MODULES:
+            name = module.__name__.split(".")[-1]
+            logger.info("Cleaning %s", name)
+            try:
+                module.run(con)
+            except Exception as e:
+                logger.error("Silver cleaning failed for %s: %s", name, e)
+                raise
+
+    for module in _FASTF1_SILVER_MODULES:
         name = module.__name__.split(".")[-1]
         logger.info("Cleaning %s", name)
         try:
-            module.run(con)
+            module.run(con, year=year, round_number=round_number)
         except Exception as e:
             logger.error("Silver cleaning failed for %s: %s", name, e)
             raise
@@ -143,7 +155,9 @@ def stage_silver(con: duckdb.DuckDBPyConnection) -> None:
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def run(year: int, round_number: int, start_from: int = 1) -> None:
-    db_path = REPO_ROOT / os.getenv("DUCKDB_PATH", "dbt/data/f1_local.duckdb")
+    # db_path = REPO_ROOT / os.getenv("DUCKDB_PATH", "dbt/data/f1_local.duckdb")
+    db_path = REPO_ROOT / os.getenv("DUCKDB_TEST_PATH", "dbt/data/f1_local_test.duckdb")
+
 
     logger.info("=" * 60)
     logger.info("F1 Ingestion Pipeline")
@@ -161,10 +175,10 @@ def run(year: int, round_number: int, start_from: int = 1) -> None:
 
     with duckdb.connect(str(db_path)) as con:
         if start_from <= 3:
-            stage_bronze_load(con, year)
+            stage_bronze_load(con, year, round_number)
 
         if start_from <= 4:
-            stage_silver(con)
+            stage_silver(con, year, round_number)
 
     logger.info("=" * 60)
     logger.info("Pipeline complete. Run `dbt run` to rebuild gold marts.")
